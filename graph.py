@@ -40,7 +40,7 @@ class Graph(ABC):
             neighbours = {edge.endNode() for edge in self.getEdges() if edge.startNode() == node}
             logging.info(f"The neighbours of {node} are {neighbours}.")
             return neighbours
-        
+
     def addNode(self, node) -> None:
         """
         This function has a side effect. It modifies the state of the returned value of getNodes
@@ -52,14 +52,17 @@ class Graph(ABC):
         This function has a side effect. It modifies the state of the returned value of getNodes
         """
         self.getNodes().discrad(node)
-    
+
     def addEdge(self, edge) -> None:
         """
         This function has a side effect. It modifies the state of the returned value of getEdges
         """
-        self.getNodes().add(edge)
+        self.getEdges().add(edge)
 
-def __str__(self) -> str:
-    node_str = "Nodes:\n" + "\n".join(str(node) for node in self.getNodes())
-    edge_str = "Edges:\n" + "\n".join(str(edge) for edge in self.getEdges())
-    return node_str + "\n" + edge_str
+    def __contains__(self, node) -> bool:
+        return node in self.getNodes()
+
+    def __str__(self) -> str:
+        node_str = "Nodes:\n" + "\n".join(str(node) for node in self.getNodes())
+        edge_str = "Edges:\n" + "\n".join(str(edge) for edge in self.getEdges())
+        return node_str + "\n" + edge_str
