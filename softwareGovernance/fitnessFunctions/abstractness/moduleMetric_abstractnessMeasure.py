@@ -5,6 +5,8 @@ import sys
 from typing import Dict, List
 from typing import List
 
+from icontract import ensure
+
 Attribute, Value = str, type
 FileContents = List[str]
 AbstractMethodName = str
@@ -44,11 +46,8 @@ def analyzeTheFile(contentsOfTheFile:FileContents, filename:str) -> Dict[Attribu
     
     return resultsOfAnalysis
 
+@ensure(lambda filepath: (filepath_is_a_valid_python_file := os.path.isfile(filepath) and filepath.endswith('.py')))
 def file_attributes(filepath:str) -> Dict[Attribute, Value]:
-    # Check if file exists and has .py extension
-    if not os.path.isfile(filepath) or not filepath.endswith('.py'):
-        return "Invalid file. Please provide a Python (.py) file."
-
     with open(filepath, 'r') as file:
         contentsOfTheFile:List[str] = file.readlines()
 
@@ -57,14 +56,11 @@ def file_attributes(filepath:str) -> Dict[Attribute, Value]:
 
     return attributes
 
-# Get command line arguments
-if len(sys.argv) != 2:
-    print("Usage: python moduleMetric_abstractElements.py <filepath>")
-    sys.exit(1)
-else:
-    file = sys.argv[1] 
+assert (one_parameter_is_given := len(sys.argv) == 2), "Usage: python moduleMetric_abstractElements.py <filepath>"
 
-    filename = os.path.basename(file)
-    attributes = file_attributes(file)
-    for attribute in attributes.keys():
-        print(f"{attribute} of {filename}={attributes[attribute]}")
+file = sys.argv[1] 
+filename = os.path.basename(file)
+attributes = file_attributes(file)
+
+for attribute in attributes.keys():
+    print(f"{attribute} of {filename}={attributes[attribute]}")
