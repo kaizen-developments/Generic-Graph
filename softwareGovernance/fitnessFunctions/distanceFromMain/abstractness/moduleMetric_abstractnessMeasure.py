@@ -7,38 +7,134 @@ from typing import List
 
 from icontract import ensure
 
+import ast
+
 Attribute, Value = str, type
 FileContents = List[str]
 AbstractMethodName = str
 
-def get_abstractMethods_of(contentsOfTheFile: FileContents) -> List[AbstractMethodName]:
+def get_abstractMethods_of(syntaxTree) -> List[str]:
     abstractMethods = []
-    for line in contentsOfTheFile:
-        if "abstract" in line and "def" in line:
-            methodName = line.split("def")[1].split("(")[0].strip()
-            abstractMethods.append(methodName)
+
+    for node in ast.walk(syntaxTree):
+        if isinstance(node, ast.ClassDef):
+            for child in ast.iter_child_nodes(node):
+                if isinstance(child, ast.FunctionDef):
+                    # Check if the function has a "pass" statement as its body
+                    has_pass = any(isinstance(grandchild, ast.Pass) for grandchild in ast.iter_child_nodes(child))
+
+                    # Check if the function has an "abstractmethod" decorator
+                    has_abstractmethod = any(isinstance(decorator, ast.Name) and decorator.id == 'abstractmethod' for decorator in child.decorator_list)
+
+                    if has_pass or has_abstractmethod:
+                        abstractMethods.append(child.name)
+
     return abstractMethods
 
-def get_abstractFunctions_of(contentsOfTheFile: FileContents) -> List[AbstractMethodName]:
-    pass
+def get_abstractFunctions_of(syntaxTree) -> List[str]:
+    abstractFunctions = []
 
-def get_abstractClasses_of(contentsOfTheFile: FileContents) -> List[AbstractMethodName]:
-    pass
+    for node in ast.walk(syntaxTree):
+        if isinstance(node, ast.FunctionDef):
+            # Check if the function is a direct child of the Module node (i.e., it doesn't belong to a class)
+            is_direct_child_of_module = syntaxTree.body and node in syntaxTree.body
+            # Check if the function has a "pass" statement as its body
+            has_pass = any(isinstance(child, ast.Pass) for child in ast.iter_child_nodes(node))
+            # Check if the function has an "abstractmethod" decorator
+            has_abstractmethod = any(isinstance(decorator, ast.Name) and decorator.id == 'abstractmethod' for decorator in node.decorator_list)
+            if is_direct_child_of_module and (has_pass or has_abstractmethod):
+                abstractFunctions.append(node.name)
 
-def analyzeAbstractElements(contentsOfTheFile:FileContents) -> int:
-    no_abstractMethods = len(get_abstractMethods_of(contentsOfTheFile))
-    no_abstractFunctions = len(get_abstractFunctions_of(contentsOfTheFile))
-    no_abstractClasses = len(get_abstractClasses_of(contentsOfTheFile))
+    return abstractFunctions
+
+def get_abstractClasses_of(syntaxTree) -> List[str]:
+    abstractClasses = []
+
+    for node in ast.walk(syntaxTree):
+        if isinstance(node, ast.ClassDef):
+            for child in ast.iter_child_nodes(node):
+                if isinstance(child, ast.FunctionDef):
+                    # Check if the function has a "pass" statement as its body
+                    has_pass = any(isinstance(grandchild, ast.Pass) for grandchild in ast.iter_child_nodes(child))
+
+                    # Check if the function has an "abstractmethod" decorator
+                    has_abstractmethod = any(isinstance(decorator, ast.Name) and decorator.id == 'abstractmethod' for decorator in child.decorator_list)
+
+                    if has_pass or has_abstractmethod:
+                        abstractClasses.append(node.name)
+                        break  # No need to check other methods in this class
+
+    return abstractClasses
+
+
+def get_non_abstractMethods_of(syntaxTree) -> List[str]:
+    non_abstractMethods = []
+
+    for node in ast.walk(syntaxTree):
+        if isinstance(node, ast.ClassDef):
+            for child in ast.iter_child_nodes(node):
+                if isinstance(child, ast.FunctionDef):
+                    # Check if the function is not abstract
+                    has_pass = any(isinstance(grandchild, ast.Pass) for grandchild in ast.iter_child_nodes(child))
+                    has_abstractmethod = any(isinstance(decorator, ast.Name) and decorator.id == 'abstractmethod' for decorator in child.decorator_list)
+                    if not (has_pass or has_abstractmethod):
+                        non_abstractMethods.append(child.name)
+
+    return non_abstractMethods
+
+def get_non_abstractFunctions_of(syntaxTree) -> List[str]:
+    non_abstractFunctions = []
+
+    for node in ast.walk(syntaxTree):
+        if isinstance(node, ast.FunctionDef):
+            # Check if the function is a direct child of the Module node (i.e., it doesn't belong to a class)
+            is_direct_child_of_module = syntaxTree.body and node in syntaxTree.body
+            # Check if the function is not abstract
+            has_pass = any(isinstance(child, ast.Pass) for child in ast.iter_child_nodes(node))
+            has_abstractmethod = any(isinstance(decorator, ast.Name) and decorator.id == 'abstractmethod' for decorator in node.decorator_list)
+            if is_direct_child_of_module and (not has_pass) and (not has_abstractmethod):
+                non_abstractFunctions.append(node.name)
+
+    return non_abstractFunctions
+
+
+def get_non_abstractClasses_of(syntaxTree) -> List[str]:
+    non_abstractClasses = []
+
+    for node in ast.walk(syntaxTree):
+        if isinstance(node, ast.ClassDef):
+            # Check if the class is not abstract
+            is_abstract = False
+            for child in ast.iter_child_nodes(node):
+                if isinstance(child, ast.FunctionDef):
+                    has_pass = any(isinstance(grandchild, ast.Pass) for grandchild in ast.iter_child_nodes(child))
+                    has_abstractmethod = any(isinstance(decorator, ast.Name) and decorator.id == 'abstractmethod' for decorator in child.decorator_list)
+                    if has_pass or has_abstractmethod:
+                        is_abstract = True
+                        break
+            if not is_abstract:
+                non_abstractClasses.append(node.name)
+
+    return non_abstractClasses
+
+def analyzeAbstractElements(syntaxTree) -> int:
+    no_abstractMethods = len(get_abstractMethods_of(syntaxTree))
+    no_abstractFunctions = len(get_abstractFunctions_of(syntaxTree))
+    no_abstractClasses = len(get_abstractClasses_of(syntaxTree))
     no_abstractElements = no_abstractMethods + no_abstractFunctions + no_abstractClasses
     return no_abstractElements
 
 
-def analyzeConcreteElements(contentsOfTheFile:FileContents) -> Dict[Attribute, Value]:
-    pass
+def analyzeConcreteElements(syntaxTree) -> Dict[Attribute, Value]:
+    no_abstractMethods = len(get_non_abstractMethods_of(syntaxTree))
+    no_abstractFunctions = len(get_non_abstractFunctions_of(syntaxTree))
+    no_abstractClasses = len(get_non_abstractClasses_of(syntaxTree))
+    no_abstractElements = no_abstractMethods + no_abstractFunctions + no_abstractClasses
+    return no_abstractElements
 
-def analyzeTheFile(contentsOfTheFile:FileContents, filename:str) -> Dict[Attribute, Value]:
-    no_AbstractElements = analyzeAbstractElements(contentsOfTheFile)
-    no_concreteElements = analyzeConcreteElements(contentsOfTheFile)
+def analyzeTheFile(syntaxTree) -> Dict[Attribute, Value]:
+    no_AbstractElements = analyzeAbstractElements(syntaxTree)
+    no_concreteElements = analyzeConcreteElements(syntaxTree)
     measureOfAbstractness = no_AbstractElements / (no_AbstractElements + no_concreteElements)
 
     resultsOfAnalysis = {"Number of abstract elements" : no_AbstractElements, 
@@ -48,11 +144,10 @@ def analyzeTheFile(contentsOfTheFile:FileContents, filename:str) -> Dict[Attribu
 
 @ensure(lambda filepath: (filepath_is_a_valid_python_file := os.path.isfile(filepath) and filepath.endswith('.py')))
 def file_attributes(filepath:str) -> Dict[Attribute, Value]:
-    with open(filepath, 'r') as file:
-        contentsOfTheFile:List[str] = file.readlines()
+    with open(filepath, 'r') as sourceCode:
+        syntaxTree = ast.parse(sourceCode.read())
 
-    filename = os.path.basename(filepath)
-    attributes = analyzeTheFile(contentsOfTheFile, filename)
+    attributes = analyzeTheFile(syntaxTree)
 
     return attributes
 
