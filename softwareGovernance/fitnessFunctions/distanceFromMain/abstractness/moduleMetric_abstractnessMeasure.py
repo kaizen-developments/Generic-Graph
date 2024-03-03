@@ -117,7 +117,7 @@ def get_non_abstractClasses_of(syntaxTree) -> List[str]:
 
     return non_abstractClasses
 
-def analyzeAbstractElements(syntaxTree) -> int:
+def countAbstractElements(syntaxTree) -> int:
     no_abstractMethods = len(get_abstractMethods_of(syntaxTree))
     no_abstractFunctions = len(get_abstractFunctions_of(syntaxTree))
     no_abstractClasses = len(get_abstractClasses_of(syntaxTree))
@@ -125,7 +125,7 @@ def analyzeAbstractElements(syntaxTree) -> int:
     return no_abstractElements
 
 
-def analyzeConcreteElements(syntaxTree) -> Dict[Attribute, Value]:
+def countConcreteElements(syntaxTree) -> Dict[Attribute, Value]:
     no_abstractMethods = len(get_non_abstractMethods_of(syntaxTree))
     no_abstractFunctions = len(get_non_abstractFunctions_of(syntaxTree))
     no_abstractClasses = len(get_non_abstractClasses_of(syntaxTree))
@@ -133,8 +133,8 @@ def analyzeConcreteElements(syntaxTree) -> Dict[Attribute, Value]:
     return no_abstractElements
 
 def analyzeTheFile(syntaxTree) -> Dict[Attribute, Value]:
-    no_AbstractElements = analyzeAbstractElements(syntaxTree)
-    no_concreteElements = analyzeConcreteElements(syntaxTree)
+    no_AbstractElements = countAbstractElements(syntaxTree)
+    no_concreteElements = countConcreteElements(syntaxTree)
     measureOfAbstractness = no_AbstractElements / (no_AbstractElements + no_concreteElements)
 
     resultsOfAnalysis = {"Number of abstract elements" : no_AbstractElements, 
@@ -151,11 +151,15 @@ def file_attributes(filepath:str) -> Dict[Attribute, Value]:
 
     return attributes
 
-assert (one_parameter_is_given := len(sys.argv) == 2), "Usage: python moduleMetric_abstractElements.py <filepath>"
+def main():
+    assert (one_parameter_is_given := len(sys.argv) == 2), "Usage: python moduleMetric_abstractElements.py <filepath>"
 
-file = sys.argv[1] 
-filename = os.path.basename(file)
-attributes = file_attributes(file)
+    file = sys.argv[1] 
+    filename = os.path.basename(file)
+    attributes = file_attributes(file)
 
-for attribute in attributes.keys():
-    print(f"{attribute} of {filename}={attributes[attribute]}")
+    for attribute in attributes.keys():
+        print(f"{attribute} of {filename}={attributes[attribute]}")
+
+if __name__ == "__main__":
+    main()

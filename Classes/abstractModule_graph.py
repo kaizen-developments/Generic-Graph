@@ -58,6 +58,8 @@ class Graph(ABC):
         This function has a side effect. It modifies the state of the returned value of getEdges
         """
         self.getEdges().add(edge)
+        self.getNodes().add(edge.startNode())
+        self.getNodes().add(edge.endNode())
 
     def __contains__(self, node) -> bool:
         return node in self.getNodes()

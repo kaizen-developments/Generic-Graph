@@ -1,23 +1,13 @@
 from googleapiclient.discovery import build, Resource
+from Classes.abstractModule_graph import Edge, Graph 
 from typing import List, Set
 import networkx as nx
 import matplotlib.pyplot as plt
 
-import sys
-import os
+from implementationCallables import get_youtube_API_key
 
-def import_the_folder_n_steps_above(n: int) -> None:
-    current_folder = os.path.abspath(os.path.dirname(__file__))
-    steps = [".."] * n
-    target_folder = os.path.abspath(os.path.join(current_folder, *steps))
-    sys.path.insert(0, target_folder)
-import_the_folder_n_steps_above(n=1)
-
-from Implementation.implementationCallables import get_youtube_API_key
-
-from abstractModule_graph import Edge, Graph 
 class Link(Edge):
-    def __init__(self, source:Resource="", target:Resource=""):
+    def __init__(self, source:Resource, target:Resource):
         self.source = source
         self.target = target
     
@@ -53,7 +43,7 @@ class ResourceGraph(Graph):
         request = ResourceGraph.youtube.search().list(
             part="snippet",
             type="video",
-            maxResults=1,
+            maxResults=5,
             q=video_title
         )
         response = request.execute()
@@ -85,7 +75,7 @@ class ResourceGraph(Graph):
 
         # Add edges to the graph
         for edge in self.getEdges():
-            graph.add_edge(edge.startNode()['id'], edge.endNode()['id'])
+            graph.add_edge(edge.sourceNode()['id'], edge.targetNode()['id'])
 
         # Draw the graph
         nx.draw(graph, with_labels=True)

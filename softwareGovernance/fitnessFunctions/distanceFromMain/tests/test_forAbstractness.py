@@ -13,51 +13,81 @@ import_the_folder_n_steps_above(n=1)
 
 from abstractness.moduleMetric_abstractnessMeasure import get_abstractMethods_of, \
     get_abstractFunctions_of, get_abstractClasses_of, get_non_abstractMethods_of, \
-    get_non_abstractFunctions_of, get_non_abstractClasses_of, analyzeAbstractElements, \
-    analyzeConcreteElements, analyzeTheFile
+    get_non_abstractFunctions_of, get_non_abstractClasses_of, countAbstractElements, \
+    countConcreteElements, analyzeTheFile
+
+#Use a relative import to get fixtures/testModule.py from the current folder!
 
 class TestAbstractness(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        with open("/home/solteszistvan/Programming/python_programs/genericGraph/softwareGovernance/fitnessFunctions/distanceFromMain/abstractness/abstractModule_graph.py", "r") as file:
-            cls.syntaxTree = ast.parse(file.read())
+        cls.classModule_relativePath = "fixtures/testModule1.py"
+        cls.moduleMetric_relativePath = "fixtures/testModule2.py"
+        cls.implementationModule_relativePath = "fixtures/testModule3.py"
+        with open(cls.classModule_relativePath, "r") as code:
+            cls.classModule_syntaxTree = ast.parse(code.read())
+        with open(cls.moduleMetric_relativePath, "r") as code:
+            cls.moduleMetric_syntaxTree = ast.parse(code.read())
+        with open(cls.implementationModule_relativePath) as code:
+            cls.implementationModule_syntaxTree = ast.parse(code.read())
 
     def test_get_abstractMethods_of(self):
-        result = get_abstractMethods_of(self.syntaxTree)
+        result = get_abstractMethods_of(self.classModule_syntaxTree)
         self.assertIsInstance(result, list)
+        self.assertEqual(len(result), 4)
+        self.assertEqual(result, ["startNode", "endNode", "getNodes", "getEdges"])
+
 
     def test_get_abstractFunctions_of(self):
-        result = get_abstractFunctions_of(self.syntaxTree)
+        result = get_abstractFunctions_of(self.moduleMetric_syntaxTree)
         self.assertIsInstance(result, list)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result, ["analyzeTheFile"])
 
     def test_get_non_abstractMethods_of(self):
-        result = get_non_abstractMethods_of(self.syntaxTree)
+        result = get_non_abstractMethods_of(self.classModule_syntaxTree)
         self.assertIsInstance(result, list)
+        self.assertEqual(len(result), 8)
+        self.assertEqual(result, ["elements", "__str__", "neighboursOf", "addNode", "removeNode", "addEdge", "__contains__", "__str__"])
 
     def test_get_non_abstractFunctions_of(self):
-        result = get_non_abstractFunctions_of(self.syntaxTree)
+        result = get_non_abstractFunctions_of(self.moduleMetric_syntaxTree)
         self.assertIsInstance(result, list)
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result, ["file_attributes", "main"])
 
     def test_get_abstractClasses_of(self):
-        result = get_abstractClasses_of(self.syntaxTree)
+        result = get_abstractClasses_of(self.classModule_syntaxTree)
         self.assertIsInstance(result, list)
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result, ["Edge", "Graph"])
 
     def test_get_non_abstractClasses_of(self):
-        result = get_non_abstractClasses_of(self.syntaxTree)
+        result = get_non_abstractClasses_of(self.implementationModule_syntaxTree)
         self.assertIsInstance(result, list)
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result, ["Link", "ResourceGraph"])
 
-    def test_analyzeAbstractElements(self):
-        result = analyzeAbstractElements(self.syntaxTree)
+    def test_countAbstractElements(self):
+        result = countAbstractElements(self.classModule_syntaxTree)
         self.assertIsInstance(result, int)
+        self.assertEqual(result, 6)
 
-    def test_analyzeConcreteElements(self):
-        result = analyzeConcreteElements(self.syntaxTree)
+    def test_countConcreteElements(self):
+        result = countConcreteElements(self.classModule_syntaxTree)
         self.assertIsInstance(result, int)
+        self.assertEqual(result, 8)
 
     def test_analyzeTheFile(self):
-        result = analyzeTheFile(self.syntaxTree)
+        result = analyzeTheFile(self.classModule_syntaxTree)
         self.assertIsInstance(result, dict)
+        self.assertEqual(result, 
+        {
+            "Number of abstract elements" : 6,
+            "Number of concrete elements" : 8,
+            "Measure of abstractness" : 0.42857142857142855
+        })
 
 if __name__ == '__main__':
     unittest.main()

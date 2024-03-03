@@ -25,7 +25,7 @@ def get_video_resources(username)->List[Resource]:
     playlist_request = youtube.playlistItems().list(
         part='snippet',
         playlistId=uploads_id,
-        maxResults=50  # Change this to get more videos
+        maxResults=1  # Change this to get more videos
     )
     playlist_response = playlist_request.execute()
 
