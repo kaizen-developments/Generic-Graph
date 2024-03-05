@@ -1,4 +1,4 @@
-#!/home/solteszistvan/Programming/PythonProjects/ProjectTemplates/GenericSoftwareProject/venv/bin/python3
+#!/home/solteszistvan/Programming/python_programs/genericGraph/venv/bin/python3.10
 # -*- coding: utf-8 -*-
 import re
 import sys

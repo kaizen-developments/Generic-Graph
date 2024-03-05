@@ -1,0 +1,2 @@
+requirements.txt:
+    1. If a new module is installed with pip, then execute "pip show <newmodulename>" to find <version of newmodulename>, before adding <newmodulename>==<version of newmodulename> to requirements.txt.

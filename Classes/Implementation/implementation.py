@@ -1,11 +1,11 @@
-from implementationClasses import Link, ResourceGraph
-from implementationCallables import get_video_resources
+from implementationClasses import Link, YoutubeVideoGraph
+from implementationCallables import get_videos_on_the_channel
 
-videoResources = get_video_resources('schafer5')
+videoResources = get_videos_on_the_channel('schafer5')
 
-graph = ResourceGraph(videoResources, set())
+graph = YoutubeVideoGraph(videoResources, set())
 for resource in graph.getNodes():
-    neighbours = ResourceGraph.searchForNeighbours(resource)
+    neighbours = YoutubeVideoGraph.searchForNeighbours(resource)
     for videoResource in neighbours:
         graph.addEdge(Link(resource, videoResource))
 
