@@ -9,14 +9,7 @@ logging.basicConfig(level=logging.DEBUG)
 import sys
 import os
 
-def import_the_folder_n_steps_above(n: int) -> None:
-    current_folder = os.path.abspath(os.path.dirname(__file__))
-    steps = [".."] * n
-    target_folder = os.path.abspath(os.path.join(current_folder, *steps))
-    sys.path.insert(0, target_folder)
-import_the_folder_n_steps_above(n=1)
-
-from Classes.classModule_debugMessage import DebugMessage
+import messagetypes
 
 class Node(type):
     def nextNode(self) -> 'Node':
